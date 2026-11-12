@@ -1,17 +1,83 @@
-# Interactive app demo
+# React + TypeScript interactive app demo
 
-Open **interactive.html** (or **index.html** / **tapcpeso-demo.html**) in Chrome,
-Edge, Firefox or Safari. These are identical self-contained files: share any one
-HTML file. No server, installation, external assets or internet is needed for the
-wallet simulation. The optional speech guide uses your browser's installed voices;
-voice availability and offline speech support depend on the browser/device.
+The main demo is now a React application written in strict TypeScript and built
+with Vite. Its design, two-wallet simulation, optional voice guide and video player
+are preserved. The native Flutter application remains separate.
+
+## Run locally
+
+Install Node.js 24 LTS, then from the repository root:
+
+```sh
+cd demo
+npm ci
+npm run dev
+```
+
+Open the localhost URL printed by Vite. On Windows PowerShell, use `npm.cmd` if
+PowerShell blocks the `npm.ps1` launcher. Do not double-click `demo/index.html`:
+it is now a Vite entry point that imports TypeScript/React source.
+
+```sh
+npm run typecheck
+npm run build
+npm run preview
+```
+
+Build output is `demo/dist/`: HTML, compiled JavaScript/CSS, and the narrated MP4.
+The video is copied from `demo/tapcpeso-demo.mp4` by the build; no manual asset
+copy is needed. Only this build output is deployed, not Flutter files, source
+recordings, narration WAVs or preview screenshots. Relative asset URLs and
+`import.meta.env.BASE_URL` let the same build work under `/REPOSITORY/` as well
+as a root domain. The optional voice guide uses browser/OS speech voices.
+
+## Deploy to GitHub Pages
+
+The workflow is [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml).
+It installs from `demo/package-lock.json`, runs TypeScript checks and the Vite
+build, uploads `demo/dist`, and deploys it using the official Pages actions.
+
+1. Commit/push the source, `demo/package-lock.json`, MP4, and workflow to your
+   GitHub repository. Generated `node_modules` and `dist` are ignored.
+2. In the repository, choose **Settings → Pages → Build and deployment → Source:
+   GitHub Actions**.
+3. Push a demo change to **main**, or open **Actions → Deploy TapCPeso demo to
+   GitHub Pages → Run workflow**.
+4. Open the published URL shown in the deployment, normally
+   `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`.
+
+No personal access token or cloud backend secrets are required. The workflow uses
+GitHub's temporary token with Pages/OIDC permissions. If your default branch has
+a different name, change `push.branches` in the workflow. For a private repository,
+GitHub Pages availability depends on your plan. Actual publication runs in your
+GitHub account; it has not been triggered from this workspace.
+
+See [Vite's GitHub Pages guide](https://vite.dev/guide/static-deploy#github-pages)
+and [GitHub's custom Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+## Code organization
+
+- `src/main.tsx`: React entry point.
+- `src/App.tsx`: React screens, forms, wallet panels, voice guide and video dialog.
+- `src/types.ts`: typed accounts, payments, devices and modal state.
+- `src/wallet.ts`: observable session state, wallet actions and validation.
+- `src/crypto.ts`: browser-local SHA256/HMAC and exact cent parsing.
+- `src/styles.css`: preserved responsive TapCPeso styling.
+- `vite.config.ts`: relative deployment base and MP4 build packaging.
+
+The legacy `interactive.html` and `tapcpeso-demo.html` copies remain available as
+standalone HTML snapshots. They are not the React source or the Pages entry point.
+`tool/add-demo-player.py` updates only those legacy copies and cannot overwrite
+the React `index.html`.
+
+## Try the wallet flow
 
 There is no playback timeline or automatic slide progression. Buttons and forms
 change real session state. On small screens use the Phone A / Phone B tabs.
 
-Use **Watch 1-min demo** in the header for the narrated video overlay. Keep
-`tapcpeso-demo.mp4` beside the HTML when sharing this player. The wallet simulation
-itself remains self-contained if you share only the HTML.
+Use **Watch 1-min demo** in the header for the narrated video overlay. The React
+build includes the video automatically. If sharing a legacy standalone HTML
+snapshot, keep `tapcpeso-demo.mp4` beside it for video playback.
 
 1. Click **Set up both demo wallets**. Each phone starts with PHP 1,000.
 2. On phone A choose **Add money** and enter, for example, `100.00`.
@@ -36,11 +102,15 @@ resets all data. The actual Flutter application continues using SQLite and nativ
 authentication/NFC code. This browser preview does not replace device testing or
 provide production money security.
 
-Browser QA: `node tool/check-interactive.mjs` exercises registration, cash-in,
+Browser QA: after `npm run build` in `demo`, run `node tool/check-interactive.mjs`
+from the repository root. It serves the compiled React app under `/TapCPeso/`
+to exercise project Pages paths. It checks registration, cash-in,
 incorrect PIN, cancellation, insufficient funds, debit/credit, QR delivery, NFC
 replay, signature tampering, recipient binding, sync, reset, guide progression,
 and mobile tabs/overflow. SHA256/HMAC are cross-checked against Node's crypto.
-Results are saved in `interactive-verification.json`, with desktop/mobile
+It also verifies the video loads, pauses on close, and does not break mobile
+layout, and fails on missing production assets. Results are saved in
+`interactive-verification.json`, with desktop/mobile
 screenshots in `previews/`. Narration availability/quality was not audio-tested.
 
 ## One-minute moving-interface video

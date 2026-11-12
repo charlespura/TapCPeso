@@ -1,4 +1,4 @@
-"""Keep the three local interactive entry points in sync, with a video overlay."""
+"""Update the legacy standalone HTML copies, without changing the React entry."""
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
@@ -39,6 +39,6 @@ if 'id="watch-demo"' not in html:
     html = html.replace('<div class="tools">', '<div class="tools"><button class="secondary" id="watch-demo">▶ <span class="watch-label">Watch 1-min demo</span><span class="watch-short">Demo</span></button>', 1)
     html = html.replace('</body>', dialog + script + '</body>')
 source.write_text(html, encoding='utf-8')
-for name in ('index.html', 'tapcpeso-demo.html'):
+for name in ('tapcpeso-demo.html',):
     source.with_name(name).write_text(html, encoding='utf-8')
 print('TapCPeso in-page video player added; interactive entry points synchronized.')

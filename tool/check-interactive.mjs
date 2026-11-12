@@ -1,9 +1,28 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
-import {fileURLToPath,pathToFileURL} from 'node:url';
+import {fileURLToPath} from 'node:url';
+import http from 'node:http';
 import {createHash,createHmac} from 'node:crypto';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const dist=path.join(root,'demo','dist'),prefix='/TapCPeso/';
+const failedRequests=[];
+// Exercise the actual production build under a GitHub-Pages-style subdirectory.
+const server=http.createServer(async(req,res)=>{
+  try {
+    const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+    if(pathname.endsWith('/favicon.ico')){res.writeHead(204);res.end();return}
+    if(!pathname.startsWith(prefix)){res.writeHead(404);res.end();failedRequests.push(pathname);return}
+    const relative=pathname.slice(prefix.length)||'index.html',file=path.resolve(dist,relative);
+    if(!file.startsWith(dist+path.sep)){res.writeHead(403);res.end();return}
+    const data=await fs.readFile(file),ext=path.extname(file);
+    const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.mp4':'video/mp4'}[ext]||'application/octet-stream';
+    const range=/bytes=(\d+)-(\d*)/.exec(req.headers.range||'');
+    if(range){const start=Number(range[1]),end=Math.min(data.length-1,range[2]?Number(range[2]):data.length-1);res.writeHead(206,{'Content-Type':mime,'Content-Range':`bytes ${start}-${end}/${data.length}`,'Content-Length':end-start+1,'Accept-Ranges':'bytes'});res.end(data.subarray(start,end+1))}
+    else{res.writeHead(200,{'Content-Type':mime,'Content-Length':data.length,'Accept-Ranges':'bytes'});res.end(data)}
+  }catch(e){if(!req.url.includes('favicon'))failedRequests.push(req.url);res.writeHead(404);res.end()}
+});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=spawn(process.env.CHROME_PATH||'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',[
   '--headless=new','--remote-debugging-port=9334',`--user-data-dir=${path.join(root,'.dart_tool','interactive-chrome')}`,
   '--no-first-run','--no-default-browser-check','--disable-background-timer-throttling','about:blank'],
@@ -16,11 +35,11 @@ try{
   let id=0;const pending=new Map(),errors=[];
   ws.onmessage=event=>{const r=JSON.parse(event.data);if(r.id&&pending.has(r.id)){const p=pending.get(r.id);pending.delete(r.id);r.error?p.reject(Error(JSON.stringify(r.error))):p.resolve(r.result)}else if(r.method==='Runtime.exceptionThrown')errors.push(r.params.exceptionDetails)};
   const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const n=++id;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params,...(sessionId?{sessionId}:{})}))});
-  const {targetId}=await call('Target.createTarget',{url:pathToFileURL(path.join(root,'demo','index.html')).href});
+  const {targetId}=await call('Target.createTarget',{url:`http://127.0.0.1:${server.address().port}${prefix}`});
   const {sessionId}=await call('Target.attachToTarget',{targetId,flatten:true});
   await call('Runtime.enable',{},sessionId);await call('Page.enable',{},sessionId);
   await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1050,deviceScaleFactor:1,mobile:false},sessionId);
-  async function ev(expression){const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true},sessionId);if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value}
+  async function ev(expression){const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true},sessionId);if(r.exceptionDetails){console.error('Earlier browser exceptions:',JSON.stringify(errors));throw Error(JSON.stringify(r.exceptionDetails))}return r.result.value}
   for(let i=0;i<40;i++){if(await ev('!!window.TapDemo'))break;await new Promise(r=>setTimeout(r,100))}
   const check=async(expression,message)=>{if(!await ev(expression))throw Error(message)};
   const click=async(k,a)=>{await ev(`document.querySelector('[data-phone="${k}"] [data-action="${a}"]').click();true`);await new Promise(r=>setTimeout(r,20))};
@@ -53,7 +72,8 @@ try{
   await check(`TapDemo.snapshot().devices.A.ledger.every(t=>t.status==='SYNCED')&&TapDemo.snapshot().devices.B.ledger.every(t=>t.status==='SYNCED')`,'Sync failed');
   await check('TapDemo.snapshot().completed.length===6','Guide did not complete');
   await fs.mkdir(path.join(root,'demo','previews'),{recursive:true});
-  await ev('document.querySelectorAll(".toast").forEach(e=>e.remove())');
+  // Hide transient notices for screenshots without removing React-owned nodes.
+  await ev('document.querySelectorAll(".toast").forEach(e=>e.style.visibility="hidden")');
   const shot=await call('Page.captureScreenshot',{format:'png'},sessionId);await fs.writeFile(path.join(root,'demo','previews','interactive-desktop.png'),Buffer.from(shot.data,'base64'));
   await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},sessionId);
   await check('document.documentElement.scrollWidth<=390','Mobile page overflows horizontally');
@@ -78,7 +98,8 @@ try{
   await ev('document.getElementById("video-close").click()');
   await check('!document.getElementById("demo-dialog").open&&document.getElementById("walkthrough-video").paused','Video did not pause on close');
   if(errors.length)throw Error(JSON.stringify(errors));
+  if(failedRequests.length)throw Error('Production asset requests failed: '+JSON.stringify(failedRequests));
   const report={passed:true,checks:['SHA256/HMAC vs Node crypto','demo accounts','cash-in isolation','insufficient funds','wrong PIN','cancellation','single debit','QR delivery','NFC replay','signature tampering','recipient binding','independent sync','guide completion','mobile width and tabs','reset','registration','one-cent amount','form survives toast expiry','Escape dismisses modal','video overlay opens and decodes','video stops on close','mobile video button layout'],screenshots:['interactive-desktop.png','interactive-mobile.png'],browserExceptions:errors};
   await fs.writeFile(path.join(root,'demo','interactive-verification.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
   await call('Browser.close');
-}finally{if(ws)ws.close();browser.kill()}
+}finally{if(ws)ws.close();browser.kill();server.close()}

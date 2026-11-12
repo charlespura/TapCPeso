@@ -1,11 +1,11 @@
 # TapCPeso
 
-Open the [interactive app demo](demo/interactive.html): tap through two working
-wallet panels, edit amounts, approve payments, deliver simulated QR/NFC tokens,
-reject duplicates, and sync. Enable the optional voice guide for spoken help.
-It is a self-contained browser sandbox, separate from the native SQLite app.
-The earlier [one-minute video](demo/tapcpeso-demo.mp4) is also retained.
-See [demo notes](demo/README.md) for sharing and verification details.
+The [React + TypeScript demo](demo/README.md) includes two working wallet panels,
+editable amounts, simulated QR/NFC transfers, replay rejection, sync, an optional
+voice guide, and a [one-minute video](demo/tapcpeso-demo.mp4). Run it with
+`cd demo`, `npm ci`, then `npm run dev`. It remains separate from the native
+SQLite app. A [GitHub Pages workflow](.github/workflows/deploy.yml) builds and
+deploys the React demo when demo changes are pushed to `main`.
 
 A native Flutter Android/iOS offline wallet prototype. SQLite (`sqflite`) is the
 only persistent store. There is no backend, Firebase, network sync, or real money.
