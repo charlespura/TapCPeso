@@ -1,0 +1,22 @@
+name: tapc_peso
+description: SQLite-only offline wallet prototype.
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: '>=3.41.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite: ^2.4.6
+  path: ^1.9.1
+  local_auth: ^3.0.2
+  crypto: ^3.0.8
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.5.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  sqflite_common_ffi: ^2.4.7
+flutter:
+  uses-material-design: true
