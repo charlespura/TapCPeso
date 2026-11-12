@@ -1,5 +1,12 @@
 # TapCPeso
 
+Open the [interactive app demo](demo/interactive.html): tap through two working
+wallet panels, edit amounts, approve payments, deliver simulated QR/NFC tokens,
+reject duplicates, and sync. Enable the optional voice guide for spoken help.
+It is a self-contained browser sandbox, separate from the native SQLite app.
+The earlier [one-minute video](demo/tapcpeso-demo.mp4) is also retained.
+See [demo notes](demo/README.md) for sharing and verification details.
+
 A native Flutter Android/iOS offline wallet prototype. SQLite (`sqflite`) is the
 only persistent store. There is no backend, Firebase, network sync, or real money.
 Material 3 UI, local registration/login, cash-in, device authentication, signed

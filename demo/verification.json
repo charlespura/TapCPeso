@@ -1,0 +1,63 @@
+{
+  "extension": "mp4",
+  "mime": "video/mp4;codecs=avc1.42001f,mp4a.40.2",
+  "size": 9602714,
+  "duration": 60.128267,
+  "width": 1280,
+  "height": 720,
+  "audioTracks": null,
+  "illustrated": true,
+  "motionVersion": 2,
+  "motionChecks": [
+    {
+      "time": 3,
+      "changedPixels": 21269
+    },
+    {
+      "time": 10,
+      "changedPixels": 9084
+    },
+    {
+      "time": 18,
+      "changedPixels": 1040
+    },
+    {
+      "time": 27,
+      "changedPixels": 10544
+    },
+    {
+      "time": 35,
+      "changedPixels": 14212
+    },
+    {
+      "time": 44,
+      "changedPixels": 40830
+    },
+    {
+      "time": 52,
+      "changedPixels": 1088
+    },
+    {
+      "time": 57,
+      "changedPixels": 4194
+    }
+  ],
+  "brand": "TapCPeso green Material-style wallet UI",
+  "voice": "Microsoft Zira Desktop (synthetic)",
+  "saved_file_bytes": 9602714,
+  "container_tracks": [
+    "soun",
+    "vide"
+  ],
+  "narration_pcm_rms": [
+    3391,
+    3043,
+    2976,
+    3216,
+    3164,
+    2913,
+    2976,
+    2973
+  ],
+  "saved_container_verified": true
+}

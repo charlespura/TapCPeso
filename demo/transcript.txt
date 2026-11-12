@@ -1,0 +1,23 @@
+00–06 seconds / Meet TapCPeso
+Meet Tap C Peso, an offline wallet prototype using demo money.
+
+06–14 seconds / 01 / Set up
+Tap Quick Demo Setup. Open Person One on the first phone, and Person Two on the second.
+
+14–22 seconds / 02 / Add money
+Your dashboard shows the local balance. Add mock funds, then choose Send Offline.
+
+22–31 seconds / 03 / Authorize
+Enter the receiver's number and twenty five pesos. Confirm your wallet PIN, then approve with your fingerprint or device passcode.
+
+31–40 seconds / 04 / Transfer
+Funds are deducted once. The receiver scans your QR, or reads NFC from a compatible Android sender.
+
+40–48 seconds / 05 / Receive
+The app checks the recipient and signature, then credits the receiver. Duplicate payments are rejected locally.
+
+48–55 seconds / 06 / Review and sync
+History starts as offline pending. Simulated sync verifies signatures. It does not contact a bank.
+
+55–60 seconds / TapCPeso
+Tap C Peso: demo money only. Hardware testing required.

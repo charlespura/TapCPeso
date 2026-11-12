@@ -1,0 +1,10 @@
+[
+  {"start":0,"end":6,"title":"An offline wallet, on your phone","chapter":"Meet TapCPeso","narration":"Meet Tap C Peso, an offline wallet prototype using demo money."},
+  {"start":6,"end":14,"title":"Two phones. Two demo accounts.","chapter":"01 / Set up","narration":"Tap Quick Demo Setup. Open Person One on the first phone, and Person Two on the second."},
+  {"start":14,"end":22,"title":"Your balance lives on your device","chapter":"02 / Add money","narration":"Your dashboard shows the local balance. Add mock funds, then choose Send Offline."},
+  {"start":22,"end":31,"title":"Choose who. Choose how much. Approve.","chapter":"03 / Authorize","narration":"Enter the receiver's number and twenty five pesos. Confirm your wallet PIN, then approve with your fingerprint or device passcode."},
+  {"start":31,"end":40,"title":"Deliver the signed payment","chapter":"04 / Transfer","narration":"Funds are deducted once. The receiver scans your QR, or reads NFC from a compatible Android sender."},
+  {"start":40,"end":48,"title":"Received once. Credited immediately.","chapter":"05 / Receive","narration":"The app checks the recipient and signature, then credits the receiver. Duplicate payments are rejected locally."},
+  {"start":48,"end":55,"title":"A local ledger you can review","chapter":"06 / Review and sync","narration":"History starts as offline pending. Simulated sync verifies signatures. It does not contact a bank."},
+  {"start":55,"end":60,"title":"Offline demo. Clear limits.","chapter":"TapCPeso","narration":"Tap C Peso: demo money only. Hardware testing required."}
+]

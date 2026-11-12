@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "checks": [
+    "SHA256/HMAC vs Node crypto",
+    "demo accounts",
+    "cash-in isolation",
+    "insufficient funds",
+    "wrong PIN",
+    "cancellation",
+    "single debit",
+    "QR delivery",
+    "NFC replay",
+    "signature tampering",
+    "recipient binding",
+    "independent sync",
+    "guide completion",
+    "mobile width and tabs",
+    "reset",
+    "registration",
+    "one-cent amount",
+    "form survives toast expiry",
+    "Escape dismisses modal",
+    "video overlay opens and decodes",
+    "video stops on close",
+    "mobile video button layout"
+  ],
+  "screenshots": [
+    "interactive-desktop.png",
+    "interactive-mobile.png"
+  ],
+  "browserExceptions": []
+}

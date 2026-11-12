@@ -1,0 +1,20 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import http from 'node:http';
+import {spawn} from 'node:child_process';
+const source=process.argv[2];if(!source)throw Error('Provide a reference video path.');
+const data=await fs.readFile(source),out=path.resolve('demo/previews/reference');await fs.mkdir(out,{recursive:true});
+const server=http.createServer((req,res)=>{if(req.url==='/reference.mp4'){const match=/bytes=(\d+)-(\d*)/.exec(req.headers.range||'');if(match){const start=Number(match[1]),end=match[2]?Number(match[2]):data.length-1;res.writeHead(206,{'Content-Type':'video/mp4','Accept-Ranges':'bytes','Content-Range':`bytes ${start}-${end}/${data.length}`,'Content-Length':end-start+1});res.end(data.subarray(start,end+1))}else{res.writeHead(200,{'Content-Type':'video/mp4','Content-Length':data.length,'Accept-Ranges':'bytes'});res.end(data)}}else{res.setHeader('Content-Type','text/html');res.end('<video id="v" src="/reference.mp4" muted preload="auto"></video>')}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',['--headless=new','--remote-debugging-port=9335',`--user-data-dir=${path.resolve('.dart_tool/reference-chrome')}`,'--no-first-run','about:blank'],{windowsHide:true,stdio:'ignore'});
+let ws;
+try{let version;for(let n=0;n<60;n++){try{version=await(await fetch('http://127.0.0.1:9335/json/version')).json();break}catch(e){await new Promise(r=>setTimeout(r,250))}}ws=new WebSocket(version.webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});let next=0;const pending=new Map();ws.onmessage=e=>{const r=JSON.parse(e.data),p=pending.get(r.id);if(p){pending.delete(r.id);r.error?p.reject(Error(JSON.stringify(r.error))):p.resolve(r.result)}};const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const id=++next;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})}))});
+const{targetId}=await call('Target.createTarget',{url:`http://127.0.0.1:${server.address().port}`});const{sessionId}=await call('Target.attachToTarget',{targetId,flatten:true});
+async function ev(expression){const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true},sessionId);if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value}
+for(let n=0;n<100;n++){if(await ev('document.querySelector("video")?.readyState>=2'))break;await new Promise(r=>setTimeout(r,100))}
+const info=await ev('({duration:v.duration,width:v.videoWidth,height:v.videoHeight})');console.log(JSON.stringify(info));
+const times=[.02,.12,.24,.36,.48,.60,.74,.90].map(t=>t*info.duration);
+await ev('window.framesOut=[]');
+for(let i=0;i<times.length;i++){const png=await ev(`new Promise(resolve=>{v.onseeked=()=>{const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);const url=c.toDataURL('image/png');framesOut.push({url,time:${times[i]}});resolve(url.split(',')[1])};v.currentTime=${times[i]}})`);await fs.writeFile(path.join(out,`frame-${i}.png`),Buffer.from(png,'base64'))}
+const sheet=await ev(`(async()=>{const c=document.createElement('canvas');c.width=1280;const cellH=Math.round(640*v.videoHeight/v.videoWidth)+30;c.height=cellH*4;const x=c.getContext('2d');x.fillStyle='#eef3ed';x.fillRect(0,0,c.width,c.height);for(let i=0;i<framesOut.length;i++){const img=new Image();img.src=framesOut[i].url;await img.decode();const cx=i%2*640,cy=Math.floor(i/2)*cellH;x.drawImage(img,cx,cy,640,cellH-30);x.fillStyle='#12392f';x.font='16px Arial';x.fillText(framesOut[i].time.toFixed(1)+' seconds',cx+12,cy+cellH-9)}return c.toDataURL('image/png').split(',')[1]})()`);await fs.writeFile(path.join(out,'contact-sheet.png'),Buffer.from(sheet,'base64'));await fs.writeFile(path.join(out,'metadata.json'),JSON.stringify({...info,times},null,2));await call('Browser.close');
+}finally{ws?.close();browser.kill();server.close()}
